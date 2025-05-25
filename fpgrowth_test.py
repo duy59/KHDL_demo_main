@@ -251,13 +251,7 @@ def fpgrowth(itemSetList, minSupRatio, minConf):
             print(f"  ... and {len(headerTable)-10} more items")
 
         print(f"\n{'='*60}")
-        print(f"STEP 4: FP-TREE STRUCTURE")
-        print(f"{'='*60}")
-        print("🌳 FP-Tree built successfully with frequent items")
-        print(f"📈 Tree contains {len(headerTable)} unique frequent items")
-
-        print(f"\n{'='*60}")
-        print(f"STEP 5: MINING FREQUENT PATTERNS")
+        print(f"STEP 4: MINING FREQUENT PATTERNS")
         print(f"{'='*60}")
         print("⛏️ Mining frequent itemsets from FP-Tree...")
 
@@ -265,6 +259,13 @@ def fpgrowth(itemSetList, minSupRatio, minConf):
         mineTree(headerTable, minSup, set(), freqItems)
 
         print(f"✅ Found {len(freqItems)} frequent itemsets")
+        print(f"📈 Total frequent itemsets discovered: {len(freqItems)}")
+
+        print(f"\n{'='*60}")
+        print(f"STEP 5: FP-TREE STRUCTURE")
+        print(f"{'='*60}")
+        print("🌳 FP-Tree built successfully with frequent items")
+        print(f"🌳 Tree contains {len(freqItems)} frequent items")
 
         # Show itemset size distribution
         size_dist = {}

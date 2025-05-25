@@ -5,8 +5,7 @@ module.exports = {
     interpreter: 'python3',
     cwd: '/home/duy/KHDL_demo_main',
     env: {
-      PYTHONPATH: '/home/duy/KHDL_demo_main',
-      PATH: '/home/duy/KHDL_demo_main/venv/bin:/usr/local/bin:/usr/bin:/bin'
+      PYTHONPATH: '/home/duy/KHDL_demo_main'
     },
     instances: 1,
     autorestart: true,

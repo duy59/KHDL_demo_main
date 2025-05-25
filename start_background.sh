@@ -2,11 +2,8 @@
 
 echo "🚀 Starting Association Rule Mining in background..."
 
-# Activate virtual environment
-source venv/bin/activate
-
-# Start with nohup
-nohup python app.py > app.log 2>&1 &
+# Start with nohup (no virtual environment needed)
+nohup python3 app.py > app.log 2>&1 &
 
 # Get process ID
 PID=$!
