@@ -61,7 +61,7 @@ def format_rule_description(antecedent, consequent, confidence):
         return f"Nếu mua {antecedent_text} thì khả năng mua {consequent_text} với độ tin cậy là: {confidence*100:.1f}%"
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
 ALLOWED_EXTENSIONS = {'csv', 'xlsx'}
 
@@ -247,13 +247,6 @@ def upload_file():
                 'steps': steps
             }
         }
-
-        # Log response size for debugging
-        import json
-        response_json = json.dumps(response_data, ensure_ascii=False)
-        print(f"Debug: Response size: {len(response_json)} characters")
-        print(f"Debug: Number of itemsets: {len(formatted_itemsets)}")
-        print(f"Debug: Number of rules: {len(formatted_rules)}")
 
         return jsonify(response_data)
 

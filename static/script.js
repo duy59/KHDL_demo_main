@@ -131,19 +131,6 @@ uploadForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Check file size before upload
-    const fileInput = document.getElementById('file');
-    const file = fileInput.files[0];
-    if (file) {
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        console.log(`File size: ${fileSizeMB} MB`);
-
-        if (file.size > 100 * 1024 * 1024) { // 100MB
-            alert(`File quá lớn (${fileSizeMB} MB). Vui lòng chọn file nhỏ hơn 100MB.`);
-            return;
-        }
-    }
-
     // Show progress
     showProgress();
 
@@ -161,29 +148,7 @@ uploadForm.addEventListener('submit', async (e) => {
 
         updateProgress(60, 'Đang xử lý dữ liệu...');
 
-        // Check if response is ok first
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Server error response:', errorText);
-
-            if (response.status === 413) {
-                throw new Error('File quá lớn! Vui lòng chọn file nhỏ hơn 50MB.');
-            }
-
-            throw new Error(`Server error: ${response.status} - ${errorText}`);
-        }
-
-        // Try to parse JSON with better error handling
-        let result;
-        try {
-            const responseText = await response.text();
-            console.log('Raw response:', responseText.substring(0, 500) + '...');
-            result = JSON.parse(responseText);
-        } catch (jsonError) {
-            console.error('JSON parsing error:', jsonError);
-            console.error('Response was not valid JSON');
-            throw new Error('Server trả về dữ liệu không hợp lệ (không phải JSON)');
-        }
+        const result = await response.json();
 
         console.log("data tra ra " ,result)
 
