@@ -1,0 +1,15 @@
+[Unit]
+Description=Association Rule Mining Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/path/to/your/app
+Environment=PATH=/usr/bin:/usr/local/bin
+ExecStart=/usr/bin/python3 app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
