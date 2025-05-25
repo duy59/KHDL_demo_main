@@ -148,7 +148,24 @@ uploadForm.addEventListener('submit', async (e) => {
 
         updateProgress(60, 'Đang xử lý dữ liệu...');
 
-        const result = await response.json();
+        // Check if response is ok first
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server error response:', errorText);
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+
+        // Try to parse JSON with better error handling
+        let result;
+        try {
+            const responseText = await response.text();
+            console.log('Raw response:', responseText.substring(0, 500) + '...');
+            result = JSON.parse(responseText);
+        } catch (jsonError) {
+            console.error('JSON parsing error:', jsonError);
+            console.error('Response was not valid JSON');
+            throw new Error('Server trả về dữ liệu không hợp lệ (không phải JSON)');
+        }
 
         console.log("data tra ra " ,result)
 

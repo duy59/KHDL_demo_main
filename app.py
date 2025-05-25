@@ -248,6 +248,13 @@ def upload_file():
             }
         }
 
+        # Log response size for debugging
+        import json
+        response_json = json.dumps(response_data, ensure_ascii=False)
+        print(f"Debug: Response size: {len(response_json)} characters")
+        print(f"Debug: Number of itemsets: {len(formatted_itemsets)}")
+        print(f"Debug: Number of rules: {len(formatted_rules)}")
+
         return jsonify(response_data)
 
     except Exception as e:
