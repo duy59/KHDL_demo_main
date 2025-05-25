@@ -21,9 +21,19 @@ if ! command -v pip3 &> /dev/null; then
     exit 1
 fi
 
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "🔧 Creating virtual environment..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment
+echo "🔄 Activating virtual environment..."
+source venv/bin/activate
+
 # Install dependencies
 echo "📦 Installing dependencies..."
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 
 # Check if all required files exist
 required_files=("app.py" "clean_data.py" "apriori_test.py" "fpgrowth_test.py" "code_lib.py" "stockcode_description.csv")
@@ -52,4 +62,6 @@ echo "🌐 Access at: http://vuquangduy.online:9005"
 echo "📊 Association Rule Mining Web Interface"
 echo "----------------------------------------"
 
-python3 app.py
+# Make sure we're still in virtual environment
+source venv/bin/activate
+python app.py

@@ -4,10 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=www-data
-WorkingDirectory=/path/to/your/app
-Environment=PATH=/usr/bin:/usr/local/bin
-ExecStart=/usr/bin/python3 app.py
+User=duy
+WorkingDirectory=/home/duy/KHDL_demo_main
+Environment=PATH=/home/duy/KHDL_demo_main/venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONPATH=/home/duy/KHDL_demo_main
+ExecStart=/home/duy/KHDL_demo_main/venv/bin/python app.py
 Restart=always
 RestartSec=10
 
