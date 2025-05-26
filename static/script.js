@@ -279,7 +279,7 @@ function populateItemsets(itemsets) {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-3">
-                            #${index + 1}
+                            #${item.rank || (index + 1)}
                         </span>
                         <div>
                             <div class="font-medium text-gray-800">
@@ -473,65 +473,144 @@ function updateTabsForComparison() {
 function populateItemsetsComparison(customItemsets, libraryItemsets) {
     const itemsetsList = document.getElementById('itemsetsList');
 
-    // Sort both lists by support descending
-    const sortedCustom = [...customItemsets].sort((a, b) => {
-        if (a.support === 'N/A' && b.support === 'N/A') return 0;
-        if (a.support === 'N/A') return 1;
-        if (b.support === 'N/A') return -1;
-        return b.support - a.support;
+    // Function to create itemset key for comparison
+    const getItemsetKey = (itemset) => {
+        return [...itemset].sort().join(',');
+    };
+
+    // Create maps for easier lookup
+    const customMap = new Map();
+    customItemsets.forEach(item => {
+        const key = getItemsetKey(item.itemset);
+        customMap.set(key, item);
     });
 
-    const sortedLibrary = [...libraryItemsets].sort((a, b) => b.support - a.support);
+    const libraryMap = new Map();
+    libraryItemsets.forEach(item => {
+        const key = getItemsetKey(item.itemset);
+        libraryMap.set(key, item);
+    });
+
+    // Find common, custom-only, and library-only itemsets
+    const commonKeys = new Set();
+    const customOnlyKeys = new Set();
+    const libraryOnlyKeys = new Set();
+
+    // Check custom itemsets
+    for (const key of customMap.keys()) {
+        if (libraryMap.has(key)) {
+            commonKeys.add(key);
+        } else {
+            customOnlyKeys.add(key);
+        }
+    }
+
+    // Check library itemsets
+    for (const key of libraryMap.keys()) {
+        if (!customMap.has(key)) {
+            libraryOnlyKeys.add(key);
+        }
+    }
+
+    // Create sorted arrays for display
+    const commonItemsets = Array.from(commonKeys).map(key => ({
+        custom: customMap.get(key),
+        library: libraryMap.get(key),
+        key: key
+    })).sort((a, b) => b.library.support - a.library.support);
+
+    const customOnlyItemsets = Array.from(customOnlyKeys).map(key => customMap.get(key))
+        .sort((a, b) => {
+            if (a.support === 'N/A' && b.support === 'N/A') return 0;
+            if (a.support === 'N/A') return 1;
+            if (b.support === 'N/A') return -1;
+            return b.support - a.support;
+        });
+
+    const libraryOnlyItemsets = Array.from(libraryOnlyKeys).map(key => libraryMap.get(key))
+        .sort((a, b) => b.support - a.support);
 
     itemsetsList.innerHTML = `
         <div class="mb-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
-            <i class="fas fa-sort-amount-down mr-2"></i>
-            <strong>Cả 2 danh sách đã được sắp xếp theo độ Support từ cao xuống thấp</strong>
+            <i class="fas fa-balance-scale mr-2"></i>
+            <strong>So sánh chi tiết:</strong>
+            ${commonItemsets.length} chung |
+            ${customOnlyItemsets.length} chỉ có tự viết |
+            ${libraryOnlyItemsets.length} chỉ có thư viện
         </div>
+
+        <!-- Common Itemsets -->
+        ${commonItemsets.length > 0 ? `
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-3 text-purple-600">
+                <i class="fas fa-equals mr-2"></i>Tập phổ biến chung (${commonItemsets.length})
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <h4 class="font-medium text-blue-600">Thuật toán tự viết</h4>
+                    ${commonItemsets.map((pair, index) => `
+                        <div class="border border-blue-200 rounded p-2 text-sm">
+                            <div class="flex justify-between mb-1">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">#${index + 1}</span>
+                                <span class="text-blue-600 font-bold">${pair.custom.support !== 'N/A' ? (pair.custom.support * 100).toFixed(1) + '%' : 'N/A'}</span>
+                            </div>
+                            <div class="font-medium">{${pair.custom.itemset.join(', ')}}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <h4 class="font-medium text-green-600">Thư viện mlxtend</h4>
+                    ${commonItemsets.map((pair, index) => `
+                        <div class="border border-green-200 rounded p-2 text-sm">
+                            <div class="flex justify-between mb-1">
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">#${index + 1}</span>
+                                <span class="text-green-600 font-bold">${(pair.library.support * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="font-medium">{${pair.library.itemset.join(', ')}}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- Different Itemsets -->
+        ${(customOnlyItemsets.length > 0 || libraryOnlyItemsets.length > 0) ? `
         <div class="grid md:grid-cols-2 gap-6">
             <div>
-                <h3 class="text-lg font-semibold mb-4 text-blue-600">
-                    <i class="fas fa-code mr-2"></i>Thuật toán tự viết (${sortedCustom.length})
+                <h3 class="text-lg font-semibold mb-3 text-blue-600">
+                    <i class="fas fa-code mr-2"></i>Chỉ có ở tự viết (${customOnlyItemsets.length})
                 </h3>
-                <div class="space-y-2 max-h-96 overflow-y-auto">
-                    ${sortedCustom.map((item, index) => `
-                        <div class="border border-blue-200 rounded p-3 text-sm">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                                    #${index + 1}
-                                </span>
-                                <span class="text-blue-600 font-bold">
-                                    ${item.support !== 'N/A' ? (item.support * 100).toFixed(1) + '%' : 'N/A'}
-                                </span>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    ${customOnlyItemsets.map((item, index) => `
+                        <div class="border border-blue-200 rounded p-2 text-sm">
+                            <div class="flex justify-between mb-1">
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">#${index + 1}</span>
+                                <span class="text-blue-600 font-bold">${item.support !== 'N/A' ? (item.support * 100).toFixed(1) + '%' : 'N/A'}</span>
                             </div>
                             <div class="font-medium">{${item.itemset.join(', ')}}</div>
-                            <div class="text-gray-600 text-xs">Support: ${item.support !== 'N/A' ? item.support : 'N/A'}</div>
                         </div>
                     `).join('')}
                 </div>
             </div>
             <div>
-                <h3 class="text-lg font-semibold mb-4 text-green-600">
-                    <i class="fas fa-book mr-2"></i>Thư viện mlxtend (${sortedLibrary.length})
+                <h3 class="text-lg font-semibold mb-3 text-green-600">
+                    <i class="fas fa-book mr-2"></i>Chỉ có ở thư viện (${libraryOnlyItemsets.length})
                 </h3>
-                <div class="space-y-2 max-h-96 overflow-y-auto">
-                    ${sortedLibrary.map((item, index) => `
-                        <div class="border border-green-200 rounded p-3 text-sm">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-                                    #${index + 1}
-                                </span>
-                                <span class="text-green-600 font-bold">
-                                    ${(item.support * 100).toFixed(1)}%
-                                </span>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    ${libraryOnlyItemsets.map((item, index) => `
+                        <div class="border border-green-200 rounded p-2 text-sm">
+                            <div class="flex justify-between mb-1">
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">#${index + 1}</span>
+                                <span class="text-green-600 font-bold">${(item.support * 100).toFixed(1)}%</span>
                             </div>
                             <div class="font-medium">{${item.itemset.join(', ')}}</div>
-                            <div class="text-gray-600 text-xs">Support: ${item.support}</div>
                         </div>
                     `).join('')}
                 </div>
             </div>
         </div>
+        ` : ''}
     `;
 }
 

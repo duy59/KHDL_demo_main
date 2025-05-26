@@ -94,6 +94,10 @@ def run_library_algorithm(transactions_list, min_support_ratio, min_confidence):
         # Sắp xếp itemsets theo support giảm dần
         formatted_itemsets.sort(key=lambda x: x['support'], reverse=True)
 
+        # Thêm số thứ tự
+        for i, itemset in enumerate(formatted_itemsets, 1):
+            itemset['rank'] = i
+
         formatted_rules = []
         for _, row in rules.iterrows():
             formatted_rules.append({

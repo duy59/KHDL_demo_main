@@ -181,6 +181,10 @@ def upload_file():
             # Sắp xếp itemsets theo support giảm dần
             formatted_itemsets.sort(key=lambda x: x['support'], reverse=True)
 
+            # Thêm số thứ tự
+            for i, itemset in enumerate(formatted_itemsets, 1):
+                itemset['rank'] = i
+
             formatted_rules = []
             for (antecedent, consequent), confidence in rules:
                 formatted_rules.append({
@@ -225,6 +229,10 @@ def upload_file():
 
             # Sắp xếp itemsets theo support giảm dần
             formatted_itemsets.sort(key=lambda x: x['support'], reverse=True)
+
+            # Thêm số thứ tự
+            for i, itemset in enumerate(formatted_itemsets, 1):
+                itemset['rank'] = i
 
             formatted_rules = []
             for rule in rules:
