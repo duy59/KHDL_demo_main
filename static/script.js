@@ -261,26 +261,46 @@ function populateItemsets(itemsets) {
         return;
     }
 
-    itemsetsList.innerHTML = itemsets.map((item, index) => `
-        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-3">
-                        ${index + 1}
-                    </span>
-                    <div>
-                        <div class="font-medium text-gray-800">
-                            {${item.itemset.join(', ')}}
+    // Sort by support descending (already sorted from backend, but ensure consistency)
+    const sortedItemsets = [...itemsets].sort((a, b) => {
+        if (a.support === 'N/A' && b.support === 'N/A') return 0;
+        if (a.support === 'N/A') return 1;
+        if (b.support === 'N/A') return -1;
+        return b.support - a.support;
+    });
+
+    itemsetsList.innerHTML = `
+        <div class="mb-4 text-sm text-gray-600 bg-green-50 p-3 rounded-lg">
+            <i class="fas fa-sort-amount-down mr-2"></i>
+            <strong>Đã sắp xếp theo độ Support từ cao xuống thấp</strong> (${sortedItemsets.length} tập phổ biến)
+        </div>
+        ${sortedItemsets.map((item, index) => `
+            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-3">
+                            #${index + 1}
+                        </span>
+                        <div>
+                            <div class="font-medium text-gray-800">
+                                {${item.itemset.join(', ')}}
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                Support: ${item.support !== 'N/A' ? item.support : 'N/A'}
+                                ${item.support !== 'N/A' ? ` (${(item.support * 100).toFixed(1)}%)` : ''}
+                            </div>
                         </div>
-                        ${item.support !== 'N/A' ? `<div class="text-sm text-gray-600">Support: ${item.support}</div>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-green-600">
+                            ${item.support !== 'N/A' ? (item.support * 100).toFixed(1) + '%' : 'N/A'}
+                        </div>
+                        <div class="text-xs text-gray-500">${item.itemset.length} item${item.itemset.length > 1 ? 's' : ''}</div>
                     </div>
                 </div>
-                <div class="text-sm text-gray-500">
-                    ${item.itemset.length} item${item.itemset.length > 1 ? 's' : ''}
-                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('')}
+    `;
 }
 
 function populateRules(rules) {
@@ -453,26 +473,60 @@ function updateTabsForComparison() {
 function populateItemsetsComparison(customItemsets, libraryItemsets) {
     const itemsetsList = document.getElementById('itemsetsList');
 
+    // Sort both lists by support descending
+    const sortedCustom = [...customItemsets].sort((a, b) => {
+        if (a.support === 'N/A' && b.support === 'N/A') return 0;
+        if (a.support === 'N/A') return 1;
+        if (b.support === 'N/A') return -1;
+        return b.support - a.support;
+    });
+
+    const sortedLibrary = [...libraryItemsets].sort((a, b) => b.support - a.support);
+
     itemsetsList.innerHTML = `
+        <div class="mb-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+            <i class="fas fa-sort-amount-down mr-2"></i>
+            <strong>Cả 2 danh sách đã được sắp xếp theo độ Support từ cao xuống thấp</strong>
+        </div>
         <div class="grid md:grid-cols-2 gap-6">
             <div>
-                <h3 class="text-lg font-semibold mb-4 text-blue-600">Thuật toán tự viết (${customItemsets.length})</h3>
+                <h3 class="text-lg font-semibold mb-4 text-blue-600">
+                    <i class="fas fa-code mr-2"></i>Thuật toán tự viết (${sortedCustom.length})
+                </h3>
                 <div class="space-y-2 max-h-96 overflow-y-auto">
-                    ${customItemsets.map((item, index) => `
+                    ${sortedCustom.map((item, index) => `
                         <div class="border border-blue-200 rounded p-3 text-sm">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                    #${index + 1}
+                                </span>
+                                <span class="text-blue-600 font-bold">
+                                    ${item.support !== 'N/A' ? (item.support * 100).toFixed(1) + '%' : 'N/A'}
+                                </span>
+                            </div>
                             <div class="font-medium">{${item.itemset.join(', ')}}</div>
-                            ${item.support !== 'N/A' ? `<div class="text-gray-600">Support: ${item.support}</div>` : ''}
+                            <div class="text-gray-600 text-xs">Support: ${item.support !== 'N/A' ? item.support : 'N/A'}</div>
                         </div>
                     `).join('')}
                 </div>
             </div>
             <div>
-                <h3 class="text-lg font-semibold mb-4 text-green-600">Thư viện mlxtend (${libraryItemsets.length})</h3>
+                <h3 class="text-lg font-semibold mb-4 text-green-600">
+                    <i class="fas fa-book mr-2"></i>Thư viện mlxtend (${sortedLibrary.length})
+                </h3>
                 <div class="space-y-2 max-h-96 overflow-y-auto">
-                    ${libraryItemsets.map((item, index) => `
+                    ${sortedLibrary.map((item, index) => `
                         <div class="border border-green-200 rounded p-3 text-sm">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
+                                    #${index + 1}
+                                </span>
+                                <span class="text-green-600 font-bold">
+                                    ${(item.support * 100).toFixed(1)}%
+                                </span>
+                            </div>
                             <div class="font-medium">{${item.itemset.join(', ')}}</div>
-                            <div class="text-gray-600">Support: ${item.support}</div>
+                            <div class="text-gray-600 text-xs">Support: ${item.support}</div>
                         </div>
                     `).join('')}
                 </div>

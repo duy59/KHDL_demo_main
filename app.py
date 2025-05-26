@@ -178,6 +178,9 @@ def upload_file():
                     'support': round(support, 4)
                 })
 
+            # Sắp xếp itemsets theo support giảm dần
+            formatted_itemsets.sort(key=lambda x: x['support'], reverse=True)
+
             formatted_rules = []
             for (antecedent, consequent), confidence in rules:
                 formatted_rules.append({
@@ -203,13 +206,25 @@ def upload_file():
 
             freqItems, rules = result
 
+            # Calculate support for FP-Growth itemsets
+            def calculate_support_for_itemset(itemset, transactions):
+                count = 0
+                for transaction in transactions:
+                    if set(itemset).issubset(set(transaction)):
+                        count += 1
+                return count / len(transactions)
+
             # Format results for JSON
             formatted_itemsets = []
             for itemset in freqItems:
+                support = calculate_support_for_itemset(itemset, transactions_list)
                 formatted_itemsets.append({
                     'itemset': list(itemset),
-                    'support': 'N/A'  # FP-Growth doesn't return support values directly
+                    'support': round(support, 4)
                 })
+
+            # Sắp xếp itemsets theo support giảm dần
+            formatted_itemsets.sort(key=lambda x: x['support'], reverse=True)
 
             formatted_rules = []
             for rule in rules:

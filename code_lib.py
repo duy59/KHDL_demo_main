@@ -91,6 +91,9 @@ def run_library_algorithm(transactions_list, min_support_ratio, min_confidence):
                 'support': round(row['support'], 4)
             })
 
+        # Sắp xếp itemsets theo support giảm dần
+        formatted_itemsets.sort(key=lambda x: x['support'], reverse=True)
+
         formatted_rules = []
         for _, row in rules.iterrows():
             formatted_rules.append({
